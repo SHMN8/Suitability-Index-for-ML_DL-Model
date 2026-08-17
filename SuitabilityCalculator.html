@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OT Threat Model Suitability Calculator</title>
+    <style>
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #ffffff; padding: 20px; }
+        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        h2 { border-bottom: 2px solid #0078D7; padding-bottom: 10px; }
+        .slider-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type=range] { width: 100%; cursor: pointer; }
+        .bar-container { display: flex; align-items: center; margin-bottom: 10px; }
+        .bar-label { width: 120px; font-weight: bold; }
+        .bar-wrapper { flex-grow: 1; background: #444; height: 24px; border-radius: 4px; overflow: hidden; margin: 0 15px; }
+        .bar { height: 100%; background: #0078D7; transition: width 0.3s ease; }
+        .bar-value { width: 50px; text-align: right; font-weight: bold; }
+        .winner { background: #28a745 !important; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Threat Model Suitability Calculator</h2>
+        
+        <div class="slider-group">
+            <label>1. Sequential/Time-Series Importance: <span id="val0">5</span>/10</label>
+            <input type="range" id="w0" min="0" max="10" value="5" oninput="update()">
+        </div>
+        <div class="slider-group">
+            <label>2. Network/Topology Mapping Importance: <span id="val1">5</span>/10</label>
+            <input type="range" id="w1" min="0" max="10" value="5" oninput="update()">
+        </div>
+        <div class="slider-group">
+            <label>3. Complex Non-Linear Classification: <span id="val2">5</span>/10</label>
+            <input type="range" id="w2" min="0" max="10" value="5" oninput="update()">
+        </div>
+        <div class="slider-group">
+            <label>4. Resource/Compute Strictness: <span id="val3">5</span>/10</label>
+            <input type="range" id="w3" min="0" max="10" value="5" oninput="update()">
+        </div>
+
+        <h3 style="margin-top: 30px;">Model Suitability Index (S)</h3>
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const models = {
+            "Logistic Regression": [0.1, 0.1, 0.2, 1.0],
+            "One-Class SVM": [0.2, 0.3, 0.8, 0.6],
+            "XGBoost": [0.3, 0.4, 1.0, 0.7],
+            "LSTM": [1.0, 0.2, 0.8, 0.3],
+            "GNN": [0.5, 1.0, 0.9, 0.2],
+            "VAE": [0.7, 0.4, 0.9, 0.4]
+        };
+
+        function update() {
+            let weights = [
+                parseInt(document.getElementById('w0').value),
+                parseInt(document.getElementById('w1').value),
+                parseInt(document.getElementById('w2').value),
+                parseInt(document.getElementById('w3').value)
+            ];
+            
+            for(let i=0; i<4; i++) document.getElementById('val'+i).innerText = weights[i];
+
+            let sumWeights = weights.reduce((a, b) => a + b, 0);
+            if(sumWeights === 0) sumWeights = 1; // prevent div by zero
+
+            let scores = [];
+            for (let [name, caps] of Object.entries(models)) {
+                let score = caps.reduce((sum, c, i) => sum + (c * weights[i]), 0) / sumWeights;
+                scores.push({name, score: (score * 100).toFixed(1)});
+            }
+            
+            scores.sort((a, b) => b.score - a.score);
+            
+            let html = '';
+            scores.forEach((m, index) => {
+                let isWinner = index === 0 ? 'winner' : '';
+                html += `
+                <div class="bar-container">
+                    <div class="bar-label">${m.name}</div>
+                    <div class="bar-wrapper"><div class="bar ${isWinner}" style="width: ${m.score}%;"></div></div>
+                    <div class="bar-value">${m.score}%</div>
+                </div>`;
+            });
+            document.getElementById('results').innerHTML = html;
+        }
+        update();
+    </script>
+</body>
+</html>
