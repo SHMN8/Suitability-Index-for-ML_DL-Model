@@ -1,55 +1,97 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OT Threat Model Suitability Calculator</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1e1e1e; color: #ffffff; padding: 20px; }
-        .container { max-width: 800px; margin: auto; background: #2d2d2d; padding: 20px; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.5); }
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            background-color: #1e1e1e; 
+            color: #ffffff; 
+            padding: 20px; 
+        }
+        .container { 
+            max-width: 950px; 
+            margin: auto; 
+            background: #2d2d2d; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.8); 
+        }
         h2 { border-bottom: 2px solid #0078D7; padding-bottom: 10px; }
-        .slider-group { margin-bottom: 15px; }
-        label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type=range] { width: 100%; cursor: pointer; }
-        .bar-container { display: flex; align-items: center; margin-bottom: 10px; }
-        .bar-label { width: 120px; font-weight: bold; }
-        .bar-wrapper { flex-grow: 1; background: #444; height: 24px; border-radius: 4px; overflow: hidden; margin: 0 15px; }
-        .bar { height: 100%; background: #0078D7; transition: width 0.3s ease; }
-        .bar-value { width: 50px; text-align: right; font-weight: bold; }
-        .winner { background: #28a745 !important; }
+        .slider-group { margin-bottom: 15px; background: #383838; padding: 10px; border-radius: 6px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #4da6ff; }
+        input[type=range] { width: 100%; cursor: pointer; accent-color: #0078D7; }
+        
+        .results-header { margin-top: 30px; border-bottom: 1px solid #555; padding-bottom: 10px; }
+        .bar-container { 
+            display: flex; 
+            align-items: center; 
+            margin-bottom: 12px; 
+            background: #333;
+            padding: 5px 10px;
+            border-radius: 5px;
+        }
+        .bar-label { width: 180px; font-weight: bold; font-size: 14px; }
+        .tag-container { width: 260px; font-size: 11px; font-weight: bold; }
+        
+        .tag { padding: 3px 6px; border-radius: 3px; letter-spacing: 0.5px; }
+        .tag-accepted-vp { background: #1b5e20; color: #a5d6a7; border: 1px solid #4caf50; }
+        .tag-accepted-ad { background: #4a148c; color: #ce93d8; border: 1px solid #9c27b0; }
+        .tag-rejected { background: #424242; color: #9e9e9e; }
+        
+        .bar-wrapper { flex-grow: 1; background: #222; height: 22px; border-radius: 4px; overflow: hidden; margin: 0 15px; border: 1px solid #444; }
+        .bar { height: 100%; background: #0078D7; transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .bar-value { width: 55px; text-align: right; font-weight: bold; font-size: 14px; color: #ffeb3b;}
+        .winner .bar { background: #ff9800 !important; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Threat Model Suitability Calculator</h2>
+        <h2>Threat Evolution Platform: Model Suitability Calculator</h2>
+        <p style="font-size: 13px; color: #ccc;">Adjust the environmental constraints below to view real-time mathematical suitability scores. Final architecture selections are hardcoded via architectural tags.</p>
         
         <div class="slider-group">
-            <label>1. Sequential/Time-Series Importance: <span id="val0">5</span>/10</label>
+            <label>1. Sequential/Time-Series Importance: <span id="val0" style="color:#fff;">5</span> / 10</label>
             <input type="range" id="w0" min="0" max="10" value="5" oninput="update()">
         </div>
         <div class="slider-group">
-            <label>2. Network/Topology Mapping Importance: <span id="val1">5</span>/10</label>
+            <label>2. Network/Topology Mapping Importance: <span id="val1" style="color:#fff;">5</span> / 10</label>
             <input type="range" id="w1" min="0" max="10" value="5" oninput="update()">
         </div>
         <div class="slider-group">
-            <label>3. Complex Non-Linear Classification: <span id="val2">5</span>/10</label>
+            <label>3. Flow Transparency & Structural Extraction: <span id="val2" style="color:#fff;">5</span> / 10</label>
             <input type="range" id="w2" min="0" max="10" value="5" oninput="update()">
         </div>
         <div class="slider-group">
-            <label>4. Resource/Compute Strictness: <span id="val3">5</span>/10</label>
+            <label>4. Resource/Compute Strictness: <span id="val3" style="color:#fff;">5</span> / 10</label>
             <input type="range" id="w3" min="0" max="10" value="5" oninput="update()">
         </div>
 
-        <h3 style="margin-top: 30px;">Model Suitability Index (S)</h3>
+        <h3 class="results-header">Dynamic Suitability Index (S) & Final Architecture Status</h3>
         <div id="results"></div>
     </div>
 
     <script>
+        // Capabilities array mapping: [Time-Series, Topology, Flow/Structure, Efficiency]
         const models = {
-            "Logistic Regression": [0.1, 0.1, 0.2, 1.0],
-            "One-Class SVM": [0.2, 0.3, 0.8, 0.6],
-            "XGBoost": [0.3, 0.4, 1.0, 0.7],
-            "LSTM": [1.0, 0.2, 0.8, 0.3],
-            "GNN": [0.5, 1.0, 0.9, 0.2],
-            "VAE": [0.7, 0.4, 0.9, 0.4]
+            "Pruned CART": { caps: [0.1, 0.1, 1.0, 1.0], tag: "tag-accepted-vp", tagText: "ACCEPTED: Variant Predict (Flow)" },
+            "LSTM": { caps: [1.0, 0.2, 0.8, 0.3], tag: "tag-accepted-vp", tagText: "ACCEPTED: Variant Predict (Time)" },
+            "GNN": { caps: [0.5, 1.0, 0.9, 0.2], tag: "tag-accepted-vp", tagText: "ACCEPTED: Variant Predict (Topology)" },
+            "VAE": { caps: [0.7, 0.4, 0.9, 0.4], tag: "tag-accepted-ad", tagText: "ACCEPTED: Anomaly Detection" },
+            "Extreme Gradient Boosting": { caps: [0.3, 0.4, 0.9, 0.6], tag: "tag-rejected", tagText: "REJECTED (Black-Box Flow)" },
+            "Explainable Boosting (EBM)": { caps: [0.2, 0.2, 0.9, 0.8], tag: "tag-rejected", tagText: "REJECTED (Alternative)" },
+            "LightGBM": { caps: [0.3, 0.4, 0.9, 0.8], tag: "tag-rejected", tagText: "REJECTED" },
+            "Random Forest": { caps: [0.2, 0.2, 0.8, 0.6], tag: "tag-rejected", tagText: "REJECTED" },
+            "Bagging Classifier": { caps: [0.2, 0.2, 0.8, 0.6], tag: "tag-rejected", tagText: "REJECTED" },
+            "Support Vector Machine": { caps: [0.2, 0.3, 0.7, 0.4], tag: "tag-rejected", tagText: "REJECTED" },
+            "Logistic Regression": { caps: [0.1, 0.1, 0.2, 1.0], tag: "tag-rejected", tagText: "REJECTED" },
+            "Gaussian Naïve Bayes": { caps: [0.1, 0.1, 0.2, 0.9], tag: "tag-rejected", tagText: "REJECTED" },
+            "K-Nearest Neighbor": { caps: [0.2, 0.3, 0.6, 0.2], tag: "tag-rejected", tagText: "REJECTED" },
+            "Generative Adversarial (GAN)": { caps: [0.6, 0.4, 0.8, 0.2], tag: "tag-rejected", tagText: "REJECTED" },
+            "Convolutional NN (CNN)": { caps: [0.4, 0.6, 0.7, 0.3], tag: "tag-rejected", tagText: "REJECTED" },
+            "Feedforward NN": { caps: [0.3, 0.3, 0.5, 0.6], tag: "tag-rejected", tagText: "REJECTED" }
         };
 
         function update() {
@@ -60,31 +102,36 @@
                 parseInt(document.getElementById('w3').value)
             ];
             
+            // Update slider text displays
             for(let i=0; i<4; i++) document.getElementById('val'+i).innerText = weights[i];
 
             let sumWeights = weights.reduce((a, b) => a + b, 0);
-            if(sumWeights === 0) sumWeights = 1; // prevent div by zero
+            if(sumWeights === 0) sumWeights = 1; // Prevent division by zero
 
             let scores = [];
-            for (let [name, caps] of Object.entries(models)) {
-                let score = caps.reduce((sum, c, i) => sum + (c * weights[i]), 0) / sumWeights;
-                scores.push({name, score: (score * 100).toFixed(1)});
+            for (let [name, data] of Object.entries(models)) {
+                let score = data.caps.reduce((sum, c, i) => sum + (c * weights[i]), 0) / sumWeights;
+                scores.push({name: name, score: (score * 100).toFixed(1), tag: data.tag, tagText: data.tagText});
             }
             
+            // Sort by mathematically calculated score (highest to lowest)
             scores.sort((a, b) => b.score - a.score);
             
             let html = '';
             scores.forEach((m, index) => {
                 let isWinner = index === 0 ? 'winner' : '';
                 html += `
-                <div class="bar-container">
+                <div class="bar-container ${isWinner}">
                     <div class="bar-label">${m.name}</div>
-                    <div class="bar-wrapper"><div class="bar ${isWinner}" style="width: ${m.score}%;"></div></div>
+                    <div class="tag-container"><span class="tag ${m.tag}">${m.tagText}</span></div>
+                    <div class="bar-wrapper"><div class="bar" style="width: ${m.score}%;"></div></div>
                     <div class="bar-value">${m.score}%</div>
                 </div>`;
             });
             document.getElementById('results').innerHTML = html;
         }
+        
+        // Run once on load
         update();
     </script>
 </body>
